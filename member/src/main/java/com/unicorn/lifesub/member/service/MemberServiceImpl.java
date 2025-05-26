@@ -1,24 +1,26 @@
 package com.unicorn.lifesub.member.service;
 
-import com.unicorn.lifesub.common.exception.BusinessException;
-import com.unicorn.lifesub.common.exception.ErrorCode;
-import com.unicorn.lifesub.member.config.jwt.JwtTokenProvider;
-import com.unicorn.lifesub.common.dto.JwtTokenDTO;
-import com.unicorn.lifesub.member.dto.LoginRequest;
-import com.unicorn.lifesub.member.dto.LogoutRequest;
-import com.unicorn.lifesub.member.dto.LogoutResponse;
-import com.unicorn.lifesub.common.exception.InfraException;
-import com.unicorn.lifesub.member.repository.entity.MemberEntity;
-import com.unicorn.lifesub.member.repository.jpa.MemberRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
+import com.unicorn.lifesub.common.dto.JwtTokenDTO;
+import com.unicorn.lifesub.common.exception.BusinessException;
+import com.unicorn.lifesub.common.exception.ErrorCode;
+import com.unicorn.lifesub.common.exception.InfraException;
+import com.unicorn.lifesub.member.config.jwt.JwtTokenProvider;
+import com.unicorn.lifesub.member.dto.LoginRequest;
+import com.unicorn.lifesub.member.dto.LogoutRequest;
+import com.unicorn.lifesub.member.dto.LogoutResponse;
+import com.unicorn.lifesub.member.repository.entity.MemberEntity;
+import com.unicorn.lifesub.member.repository.jpa.MemberRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +36,7 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new InfraException(ErrorCode.MEMBER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
+
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
         }
 

@@ -5,15 +5,15 @@
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleJvm" value="#JAVA_HOME" />
+        <option name="gradleJvm" value="azul-21" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/common" />
-            <option value="$PROJECT_DIR$/member" />
-            <option value="$PROJECT_DIR$/mysub-biz" />
-            <option value="$PROJECT_DIR$/mysub-infra" />
-            <option value="$PROJECT_DIR$/recommend" />
+            <option value="$PROJECT_DIR$/../../../../회사/DigitalGarage/ai-project/lifesub" />
+            <option value="$PROJECT_DIR$/../../../../회사/DigitalGarage/ai-project/lifesub/common" />
+            <option value="$PROJECT_DIR$/../../../../회사/DigitalGarage/ai-project/lifesub/member" />
+            <option value="$PROJECT_DIR$/../../../../회사/DigitalGarage/ai-project/lifesub/mysub-biz" />
+            <option value="$PROJECT_DIR$/../../../../회사/DigitalGarage/ai-project/lifesub/mysub-infra" />
+            <option value="$PROJECT_DIR$/../../../../회사/DigitalGarage/ai-project/lifesub/recommend" />
           </set>
         </option>
       </GradleProjectSettings>
