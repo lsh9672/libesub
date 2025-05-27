@@ -1,6 +1,6 @@
 .gradle
 build/
-
+common/build/
 ### IntelliJ IDEA ###
 .idea/
 
