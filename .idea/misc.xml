@@ -4,6 +4,8 @@
   <component name="FrameworkDetectionExcludesConfiguration">
     <file type="web" url="file://$PROJECT_DIR$/common" />
     <file type="web" url="file://$PROJECT_DIR$/member" />
+    <file type="web" url="file://$PROJECT_DIR$/mysub-biz" />
+    <file type="web" url="file://$PROJECT_DIR$/mysub-infra" />
     <file type="web" url="file://$PROJECT_DIR$/recommend" />
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="corretto-21" project-jdk-type="JavaSDK" />

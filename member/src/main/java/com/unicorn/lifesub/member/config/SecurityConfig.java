@@ -1,8 +1,8 @@
 package com.unicorn.lifesub.member.config;
 
-import com.unicorn.lifesub.member.config.jwt.CustomUserDetailsService;
-import com.unicorn.lifesub.member.config.jwt.JwtAuthenticationFilter;
-import com.unicorn.lifesub.member.config.jwt.JwtTokenProvider;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,8 +21,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.List;
+import com.unicorn.lifesub.member.config.jwt.CustomUserDetailsService;
+import com.unicorn.lifesub.member.config.jwt.JwtAuthenticationFilter;
+import com.unicorn.lifesub.member.config.jwt.JwtTokenProvider;
 
 @Configuration      //Config 레이어의 클래스임을 나타내며 Bean클래스로 등록되어 실행시 자동으로 객체가 생성됨
 @EnableWebSecurity  //인증 처리 라이브러리인 Spring Security를 활성화함
@@ -62,7 +63,7 @@ public class SecurityConfig {
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
