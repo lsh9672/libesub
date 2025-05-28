@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommend
+  namespace: dg0420-lifesub-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recommend
+  template:
+    metadata:
+      labels:
+        app: recommend
+    spec:
+      imagePullSecrets:
+      - name: acr-secret
+      containers:
+      - name: recommend
+        image: acrdigitalgarage03.azurecr.io/dg0420/recommend:1.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8083
+        envFrom:
+        - configMapRef:
+            name: common-config
+        - configMapRef:
+            name: recommend-config
+        - secretRef:
+            name: common-secret
+        - secretRef:
+            name: database-secret
+        resources:
+          requests:
+            cpu: 256m
+            memory: 256Mi
+          limits:
+            cpu: 1024m
+            memory: 1024Mi

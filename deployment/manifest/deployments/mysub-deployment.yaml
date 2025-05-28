@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysub
+  namespace: dg0420-lifesub-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysub
+  template:
+    metadata:
+      labels:
+        app: mysub
+    spec:
+      imagePullSecrets:
+      - name: acr-secret
+      containers:
+      - name: mysub
+        image: acrdigitalgarage03.azurecr.io/dg0420/mysub:1.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8082
+        envFrom:
+        - configMapRef:
+            name: common-config
+        - configMapRef:
+            name: mysub-config
+        - secretRef:
+            name: common-secret
+        - secretRef:
+            name: database-secret
+        resources:
+          requests:
+            cpu: 256m
+            memory: 256Mi
+          limits:
+            cpu: 1024m
+            memory: 1024Mi
+        livenessProbe:
+          httpGet:
+            path: /swagger-ui.html
+            port: 8082
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /swagger-ui.html
+            port: 8082
+          initialDelaySeconds: 30
+          periodSeconds: 5
