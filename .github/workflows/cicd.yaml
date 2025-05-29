@@ -65,6 +65,8 @@ jobs:
           ./gradlew :mysub-infra:sonar \
             -Dsonar.projectKey=lifesub-${{ matrix.service }}-dg0420 \
             -Dsonar.projectName=lifesub-${{ matrix.service }}-dg0420 \
+            -Dsonar.host.url="${{ secrets.SONAR_HOST_URL }}" \
+            -Dsonar.login="${{ secrets.SONAR_TOKEN }}" \
             -Dsonar.java.binaries=build/classes/java/main \
             -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \
             -Dsonar.exclusions=**/config/**,**/entity/**,**/dto/**,**/*Application.class,**/exception/**
@@ -72,6 +74,8 @@ jobs:
           ./gradlew :${{ matrix.service }}:sonar \
             -Dsonar.projectKey=lifesub-${{ matrix.service }}-dg0420 \
             -Dsonar.projectName=lifesub-${{ matrix.service }}-dg0420 \
+            -Dsonar.host.url="${{ secrets.SONAR_HOST_URL }}" \
+            -Dsonar.login="${{ secrets.SONAR_TOKEN }}" \
             -Dsonar.java.binaries=build/classes/java/main \
             -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \
             -Dsonar.exclusions=**/config/**,**/entity/**,**/dto/**,**/*Application.class,**/exception/**
@@ -129,9 +133,19 @@ jobs:
           if [ "$service" = "mysub" ]; then
             BUILD_LIB_DIR="mysub-infra/build/libs"
             JAR_FILE="mysub.jar"
+            # Find the actual JAR file and rename it
+            ACTUAL_JAR=$(find mysub-infra/build/libs -name "*.jar" | head -n 1)
+            if [ -n "$ACTUAL_JAR" ]; then
+              cp "$ACTUAL_JAR" "mysub-infra/build/libs/mysub.jar"
+            fi
           else
             BUILD_LIB_DIR="$service/build/libs"
             JAR_FILE="$service.jar"
+            # Find the actual JAR file and rename it
+            ACTUAL_JAR=$(find $service/build/libs -name "*.jar" | head -n 1)
+            if [ -n "$ACTUAL_JAR" ]; then
+              cp "$ACTUAL_JAR" "$service/build/libs/$service.jar"
+            fi
           fi
           
           echo "Building image for $service..."
