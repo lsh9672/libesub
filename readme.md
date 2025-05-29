@@ -1,1 +1,1 @@
-# Digital garage 4기 입니다
+# Digital garage 4기 입니다.
