@@ -43,8 +43,42 @@ jobs:
       run: |
         if [ "${{ matrix.service }}" = "mysub" ]; then
           ./gradlew :mysub-infra:clean :mysub-infra:build -x test
+          echo "Built mysub-infra, checking output:"
+          ls -la mysub-infra/build/libs/
         else
           ./gradlew :${{ matrix.service }}:clean :${{ matrix.service }}:build -x test
+          echo "Built ${{ matrix.service }}, checking output:"
+          ls -la ${{ matrix.service }}/build/libs/
+        fi
+    
+    - name: Prepare JAR files with standard names
+      run: |
+        if [ "${{ matrix.service }}" = "mysub" ]; then
+          cd mysub-infra/build/libs
+          # Find the generated JAR and copy it to standard name
+          GENERATED_JAR=$(ls *.jar | head -n 1)
+          if [ -n "$GENERATED_JAR" ]; then
+            echo "Found JAR: $GENERATED_JAR"
+            cp "$GENERATED_JAR" mysub.jar
+            echo "Copied to: mysub.jar"
+            ls -la
+          else
+            echo "No JAR files found!"
+            exit 1
+          fi
+        else
+          cd ${{ matrix.service }}/build/libs
+          # Find the generated JAR and copy it to standard name
+          GENERATED_JAR=$(ls *.jar | head -n 1)
+          if [ -n "$GENERATED_JAR" ]; then
+            echo "Found JAR: $GENERATED_JAR"
+            cp "$GENERATED_JAR" ${{ matrix.service }}.jar
+            echo "Copied to: ${{ matrix.service }}.jar"
+            ls -la
+          else
+            echo "No JAR files found!"
+            exit 1
+          fi
         fi
     
     - name: Run tests and generate coverage report
@@ -86,7 +120,7 @@ jobs:
       with:
         name: ${{ matrix.service }}-jar
         path: |
-          ${{ matrix.service == 'mysub' && 'mysub-infra' || matrix.service }}/build/libs/*.jar
+          ${{ matrix.service == 'mysub' && 'mysub-infra/build/libs/mysub.jar' || format('{0}/build/libs/{0}.jar', matrix.service) }}
         retention-days: 1
 
   release:
@@ -118,7 +152,40 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         pattern: "*-jar"
-        merge-multiple: true
+        merge-multiple: false
+    
+    - name: Prepare build structure for Docker
+      run: |
+        echo "Setting up directory structure for Docker build..."
+        
+        # Create the expected directory structure
+        mkdir -p member/build/libs
+        mkdir -p mysub-infra/build/libs  
+        mkdir -p recommend/build/libs
+        
+        # Copy JAR files from downloaded artifacts to expected locations
+        if [ -f member-jar/member.jar ]; then
+          cp member-jar/member.jar member/build/libs/member.jar
+          echo "Copied member.jar"
+        fi
+        
+        if [ -f mysub-jar/mysub.jar ]; then
+          cp mysub-jar/mysub.jar mysub-infra/build/libs/mysub.jar
+          echo "Copied mysub.jar"
+        fi
+        
+        if [ -f recommend-jar/recommend.jar ]; then
+          cp recommend-jar/recommend.jar recommend/build/libs/recommend.jar
+          echo "Copied recommend.jar"
+        fi
+        
+        echo "Verifying file structure:"
+        echo "Member:"
+        ls -la member/build/libs/ || echo "No member files"
+        echo "Mysub:"
+        ls -la mysub-infra/build/libs/ || echo "No mysub files"
+        echo "Recommend:"
+        ls -la recommend/build/libs/ || echo "No recommend files"
     
     - name: Login to Azure Container Registry
       uses: docker/login-action@v3
@@ -133,22 +200,24 @@ jobs:
           if [ "$service" = "mysub" ]; then
             BUILD_LIB_DIR="mysub-infra/build/libs"
             JAR_FILE="mysub.jar"
-            # Find the actual JAR file and rename it
-            ACTUAL_JAR=$(find mysub-infra/build/libs -name "*.jar" | head -n 1)
-            if [ -n "$ACTUAL_JAR" ]; then
-              cp "$ACTUAL_JAR" "mysub-infra/build/libs/mysub.jar"
-            fi
           else
             BUILD_LIB_DIR="$service/build/libs"
             JAR_FILE="$service.jar"
-            # Find the actual JAR file and rename it
-            ACTUAL_JAR=$(find $service/build/libs -name "*.jar" | head -n 1)
-            if [ -n "$ACTUAL_JAR" ]; then
-              cp "$ACTUAL_JAR" "$service/build/libs/$service.jar"
-            fi
           fi
           
           echo "Building image for $service..."
+          echo "BUILD_LIB_DIR: $BUILD_LIB_DIR"
+          echo "JAR_FILE: $JAR_FILE"
+          echo "Full path: $BUILD_LIB_DIR/$JAR_FILE"
+          
+          # Verify JAR file exists before building
+          if [ ! -f "$BUILD_LIB_DIR/$JAR_FILE" ]; then
+            echo "ERROR: JAR file not found at $BUILD_LIB_DIR/$JAR_FILE"
+            echo "Available files in $BUILD_LIB_DIR:"
+            ls -la "$BUILD_LIB_DIR/" || echo "Directory does not exist"
+            exit 1
+          fi
+          
           docker build \
             --build-arg BUILD_LIB_DIR="$BUILD_LIB_DIR" \
             --build-arg ARTIFACTORY_FILE="$JAR_FILE" \
