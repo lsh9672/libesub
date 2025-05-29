@@ -1,0 +1,24 @@
+# Team Settings
+teamid=dg0420
+root_project=lifesub
+namespace=dg0420-lifesub-ns
+
+# Container Registry Settings
+registry=acrdigitalgarage03.azurecr.io
+image_org=dg0420
+
+# Application Settings
+replicas=1
+allowed_origins=http://20.214.117.198/
+ingress_host=dg0420.20.249.191.180.nip.io
+
+# Security Settings
+jwt_secret_key=0+GZPsAQxAwwbxH/b3boOLX3yf1krj1pIPLyJh/IHvQ=
+postgres_user=dg0420
+postgres_password=Hi5Jessica!
+
+# Resource Settings
+resources_requests_cpu=256m
+resources_requests_memory=256Mi
+resources_limits_cpu=1024m
+resources_limits_memory=1024Mi
