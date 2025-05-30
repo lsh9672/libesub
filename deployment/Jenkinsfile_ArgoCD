@@ -20,8 +20,7 @@ podTemplate(
                             envVar(key: 'TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE', value: '/run/podman/podman.sock'),
                             envVar(key: 'TESTCONTAINERS_RYUK_DISABLED', value: 'true')
                         ]),
-        containerTemplate(name: 'git', image: 'alpine/git:latest', command: 'cat', ttyEnabled: true),
-        containerTemplate(name: 'yq', image: 'mikefarah/yq:latest', command: 'cat', ttyEnabled: true)
+        containerTemplate(name: 'git', image: 'alpine/git:latest', command: 'cat', ttyEnabled: true)
     ],
     volumes: [
         emptyDirVolume(mountPath: '/home/gradle/.gradle', memory: false),
@@ -148,16 +147,15 @@ testcontainers.reuse.enable=true'''
                         git config user.name "Jenkins"
                         git config user.email "jenkins@example.com"
                         
-                        # 파일 권한 설정
-                        find . -type f -name "*.yaml" -exec chmod 664 {} \\;
-                        find . -type d -exec chmod 755 {} \\;
+                        echo "Checking repository structure:"
+                        find . -name "*.yaml" -type f | head -20
                     """
                 }
             }
         }
 
         stage('Update Manifest Files') {
-            container('yq') {
+            container('git') {
                 services.each { service ->
                     def newImage = "${props.registry}/${props.image_org}/${service}:${imageTag}"
                     def manifestPath = "${manifestDir}/lifesub/${service}/${service}-deployment.yaml"
@@ -168,24 +166,29 @@ testcontainers.reuse.enable=true'''
                         # 파일 존재 여부 확인
                         if [ ! -f ${manifestPath} ]; then
                             echo "Error: Manifest file not found at ${manifestPath}"
+                            ls -la ${manifestDir}/lifesub/${service}/
                             exit 1
                         fi
                         
-                        # 파일 권한 확인 및 설정
-                        chmod 664 ${manifestPath}
+                        echo "Original manifest content:"
+                        cat ${manifestPath}
                         
-                        # 백업 생성
-                        cp ${manifestPath} ${manifestPath}.backup
+                        # sed를 사용하여 이미지 라인 교체
+                        sed -i "s|image: .*${service}:.*|image: ${newImage}|g" ${manifestPath}
                         
-                        # yq를 사용하여 이미지 업데이트
-                        yq eval '.spec.template.spec.containers[0].image = "${newImage}"' ${manifestPath} > ${manifestPath}.tmp
-                        mv ${manifestPath}.tmp ${manifestPath}
-                        
-                        echo "Updated manifest:"
+                        echo "Updated manifest content:"
                         cat ${manifestPath}
                         
                         echo "Verifying update..."
-                        grep "${newImage}" ${manifestPath} && echo "✓ Image update verified" || echo "✗ Image update failed"
+                        if grep -q "${newImage}" ${manifestPath}; then
+                            echo "✓ Image update verified for ${service}"
+                        else
+                            echo "✗ Image update failed for ${service}"
+                            echo "Expected: ${newImage}"
+                            echo "Current content:"
+                            grep "image:" ${manifestPath} || echo "No image line found"
+                            exit 1
+                        fi
                     """
                 }
             }
